@@ -2,6 +2,7 @@ package com.shark.androidcamera;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,7 +15,6 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -35,6 +35,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private int REQUEST_CODE_SETTING = 2;
 
     private CameraView cameraView;
+    private ProgressDialog savePictureDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,10 +147,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    public void onPictureTaken(final byte[] data, Camera camera) {
+    public void onPictureTaken(final byte[] data, final Camera camera) {
         //Use Second Third Save Bitmap - Shark.M.Lin
-        Handler handler = new Handler();
-        handler.post(new Runnable() {
+        showSavePictureDialog();
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 File pictureDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -180,13 +181,23 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
                     fileOutputStream.close();
-                    cameraView.setTakingPicture(false);
-                    Toast.makeText(CameraActivity.this, "拍照成功，以存檔到AndroidCamera資料夾", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(savePictureDialog != null) {
+                            savePictureDialog.dismiss();
+                        }
+                        Toast.makeText(CameraActivity.this, "拍照成功，以存檔到AndroidCamera資料夾", Toast.LENGTH_SHORT).show();
+                        cameraView.setTakingPicture(false);
+                        camera.startPreview();
+                    }
+                });
             }
-        });
+        }).start();
+
     }
 
     private void handlePermission() {
@@ -261,5 +272,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         findViewById(R.id.activityCamera_noCameraTextView).setVisibility(View.GONE);
         findViewById(R.id.activityCamera_permissionContainer).setVisibility(View.GONE);
         findViewById(R.id.activityCamera_cameraContainer).setVisibility(View.VISIBLE);
+    }
+
+    private void showSavePictureDialog() {
+        savePictureDialog = ProgressDialog.show(this, "存檔中", "請稍後", true);
     }
 }
