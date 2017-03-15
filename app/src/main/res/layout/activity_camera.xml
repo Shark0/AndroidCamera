@@ -75,5 +75,15 @@
             android:text="拍照"
             />
 
+        <Button
+            android:id="@+id/activityCamera_facingDetectButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:text="人臉偵測"
+            />
+
     </RelativeLayout>
 </RelativeLayout>

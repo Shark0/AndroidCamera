@@ -20,6 +20,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -29,7 +30,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 
-public class CameraActivity extends AppCompatActivity implements View.OnClickListener, Camera.PictureCallback, Camera.ShutterCallback {
+public class CameraActivity extends AppCompatActivity implements View.OnClickListener, Camera.PictureCallback, Camera.ShutterCallback, Camera.FaceDetectionListener {
 
     private int REQUEST_CODE_PERMISSION = 1;
     private int REQUEST_CODE_SETTING = 2;
@@ -90,6 +91,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         bindChangeFacingButton();
         bindCaptureCameraButton();
+        bindFaceDetectButton();
     }
 
     private void bindChangeFacingButton() {
@@ -105,6 +107,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         findViewById(R.id.activityCamera_captureCameraButton).setOnClickListener(this);
     }
 
+    private void bindFaceDetectButton() {
+        findViewById(R.id.activityCamera_facingDetectButton).setOnClickListener(this);
+    }
 
     @Override
     public void onClick(View view) {
@@ -117,6 +122,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.activityCamera_captureCameraButton:
                 onCaptureCameraButtonClick();
+                break;
+            case R.id.activityCamera_facingDetectButton:
+                onFacingDetectButtonClick();
                 break;
         }
     }
@@ -138,6 +146,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         if(cameraView != null) {
             cameraView.takePicture(this, this);
         }
+    }
+
+    private void onFacingDetectButtonClick() {
+        cameraView.setFaceDetectListener(this);
     }
 
     @Override
@@ -276,5 +288,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private void showSavePictureDialog() {
         savePictureDialog = ProgressDialog.show(this, "存檔中", "請稍後", true);
+    }
+
+    @Override
+    public void onFaceDetection(Camera.Face[] faces, Camera camera) {
+        Log.e("Camera", "onFaceDetection: " + faces.length);
     }
 }
